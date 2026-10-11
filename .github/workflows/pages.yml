@@ -1,0 +1,57 @@
+name: Build & deploy MarketVision snapshot
+on:
+  schedule:
+    - cron: "*/30 13-21 * * 1-5"   # every 30 min, 13:00-21:30 UTC Mon-Fri (covers the 9:30-16:00 ET session in EDT and EST)
+    - cron: "30 2 * * *"           # daily full rebuild (all research reports regenerated)
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Regenerate every research report"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Restore data cache (SEC filings, prior reports)
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/cache
+            data/static_reports
+          key: mv-data-${{ github.run_id }}
+          restore-keys: mv-data-
+      - name: Build static snapshot
+        env:
+          SEC_USER_AGENT: "MarketVision AI research Jhon.cuthbertson@hotworx.net"
+          RESEARCH_MAX_AGE_H: ${{ (github.event.schedule == '30 2 * * *' || inputs.full) && '1' || '20' }}
+          MV_SCHEDULE_TEXT: "Auto-refresh every 30 min during US market hours (Mon-Fri) + daily full rebuild"
+        run: python scripts/build_static.py --out site --conc 4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4

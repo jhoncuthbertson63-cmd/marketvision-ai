@@ -1,0 +1,52 @@
+name: Add requested ticker
+# Open an issue titled "research: TICKER" to add a ticker to the static snapshot.
+on:
+  issues:
+    types: [opened]
+permissions:
+  contents: write
+  issues: write
+  actions: write
+jobs:
+  add:
+    if: startsWith(github.event.issue.title, 'research:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate and record ticker
+        id: v
+        env:
+          TITLE: ${{ github.event.issue.title }}
+          SEC_USER_AGENT: "MarketVision AI research Jhon.cuthbertson@hotworx.net"
+        run: |
+          python3 - <<'PY'
+          import json, os, re, urllib.request
+          t = os.environ["TITLE"].split(":", 1)[1].strip().upper().replace(".", "-")
+          ok = bool(re.fullmatch(r"[A-Z]{1,5}(-[A-Z])?", t))
+          if ok:
+              req = urllib.request.Request("https://www.sec.gov/files/company_tickers.json", headers={"User-Agent": os.environ["SEC_USER_AGENT"]})
+              known = {v["ticker"].upper() for v in json.load(urllib.request.urlopen(req)).values()}
+              ok = t in known
+          p = "data/extra_tickers.json"
+          d = json.load(open(p))
+          if ok and t not in d["tickers"]:
+              d["tickers"] = sorted(set(d["tickers"]) | {t})
+              json.dump(d, open(p, "w"), indent=1)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"ticker={t}\nok={'true' if ok else 'false'}\n")
+          PY
+      - if: steps.v.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "marketvision-bot"; git config user.email "actions@users.noreply.github.com"
+          git add data/extra_tickers.json
+          git diff --cached --quiet || git commit -m "Add requested ticker ${{ steps.v.outputs.ticker }}"
+          git push
+          gh workflow run pages.yml
+          gh issue comment ${{ github.event.issue.number }} --body "Added ${{ steps.v.outputs.ticker }}. The report will appear after the next build (usually 10-20 min)."
+          gh issue close ${{ github.event.issue.number }}
+      - if: steps.v.outputs.ok != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment ${{ github.event.issue.number }} --body "Could not add that ticker: it is not a valid US SEC-registered ticker symbol."

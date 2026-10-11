@@ -1,0 +1,32 @@
+"""Module registry. Each stage plugs in by adding an entry (and a router + a frontend module file)."""
+from . import dashboard, research, scanner
+
+MODULES = [
+    {"id": "dashboard", "name": "Market Dashboard", "route": "#/", "stage": 1, "status": "live", "router": dashboard.router, "icon": "grid"},
+    {"id": "research", "name": "AI Stock Research", "route": "#/research", "stage": 1, "status": "live", "router": research.router, "icon": "search"},
+    {"id": "scanner", "name": "Growth Opportunity Scanner", "route": "#/scanner", "stage": 1, "status": "live", "router": scanner.router, "icon": "radar"},
+    {"id": "history", "name": "Historical Intelligence", "route": "#/history", "stage": 2, "status": "planned", "icon": "clock",
+     "desc": "Dot-com, 2008, COVID, rate cycles, tech booms — event studies with sector returns and recovery times (FRED + price history)."},
+    {"id": "discovery", "name": "Discovery Engine & Opportunity Score", "route": "#/discovery", "stage": 2, "status": "planned", "icon": "spark",
+     "desc": "Screen the full SEC universe for growth faster than valuation implies; composite Opportunity Score."},
+    {"id": "winners", "name": "Future Winners Dashboard", "route": "#/winners", "stage": 2, "status": "planned", "icon": "trophy",
+     "desc": "Companies tied to structural shifts before they are widely recognized."},
+    {"id": "institutional", "name": "Institutional & Insider Tracking", "route": "#/institutional", "stage": 3, "status": "planned", "icon": "bank",
+     "desc": "13F holdings changes and Form 4 insider trades (SEC EDGAR), congressional trades (needs paid feed)."},
+    {"id": "charts", "name": "Advanced Charts", "route": "#/charts", "stage": 3, "status": "planned", "icon": "chart",
+     "desc": "Multi-pane technical charts, indicators, comparisons."},
+    {"id": "rotation", "name": "Sector Rotation Tracker", "route": "#/rotation", "stage": 3, "status": "planned", "icon": "rotate",
+     "desc": "Full relative-rotation graph with history tails (basic quadrant view is on the dashboard)."},
+    {"id": "valuation", "name": "Valuation Reality Check", "route": "#/valuation", "stage": 3, "status": "planned", "icon": "scale",
+     "desc": "Current multiples vs 10-yr history, peers and implied growth (reverse DCF)."},
+    {"id": "watchlists", "name": "Portfolio, Watchlists & Alerts", "route": "#/watchlists", "stage": 4, "status": "planned", "icon": "bell",
+     "desc": "Holdings, watchlists, alerts on price, valuation, earnings surprises and filings."},
+    {"id": "thesis", "name": "Investment Thesis Tracker", "route": "#/thesis", "stage": 4, "status": "planned", "icon": "check",
+     "desc": "Record a thesis and auto-monitor whether evidence is strengthening or weakening."},
+    {"id": "simulator", "name": "Scenario Simulator", "route": "#/simulator", "stage": 4, "status": "planned", "icon": "sliders",
+     "desc": "Standalone multi-company simulator (a per-stock simulator is already on each research page)."},
+    {"id": "assistant", "name": "AI Research Assistant", "route": "#/assistant", "stage": 5, "status": "planned", "icon": "chat",
+     "desc": "Conversational research with tool-use over this platform's data and clickable sources (requires LLM key)."},
+    {"id": "brief", "name": "Daily Market Briefing", "route": "#/brief", "stage": 5, "status": "planned", "icon": "news",
+     "desc": "What happened, why it mattered, what to watch next."},
+]

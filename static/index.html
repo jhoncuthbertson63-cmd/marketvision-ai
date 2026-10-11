@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MarketVision AI — Market Intelligence & Research</title>
+<meta name="theme-color" content="#07090d">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect rx='8' width='32' height='32' fill='%234da3ff'/><path d='M7 21l6-7 4 4 8-9' stroke='white' stroke-width='3' fill='none'/></svg>">
+<link rel="stylesheet" href="static/css/app.css?v=3">
+<script src="static/vendor/echarts.min.js"></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="brand"><div class="logo">◆</div><div>MarketVision AI<small>Research-first market intelligence</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot">Stage 1 build · Data: SEC EDGAR, Yahoo Finance (delayed), FRED, Nasdaq.com<br>Not investment advice.</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <button class="burger" id="burger" aria-label="Menu">☰</button>
+      <div class="search"><span class="si">⌕</span><input id="q" placeholder="Research any US ticker or company — e.g. NVDA, Apple, VRT" autocomplete="off"><div class="sugg" id="sugg"></div></div>
+      <div class="status"><span class="pill hide-m" id="llmPill"><span class="dot"></span>AI: checking…</span><span class="pill hide-m" id="clock"></span><button class="btn" id="theme" title="Toggle theme">◐</button></div>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+<script type="module" src="static/js/app.js?v=3"></script>
+</body>
+</html>
