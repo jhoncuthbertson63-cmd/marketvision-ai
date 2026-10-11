@@ -136,8 +136,9 @@ def build(f: dict) -> dict:
     q = f.get("quarterly", {}).get("revenue", {})
     qe = sorted(q)
     if len(qe) >= 8:
-        growth["revenue_ttm_yoy"] = (sum(q[e] for e in qe[-4:]) / sum(q[e] for e in qe[-8:-4]) - 1) * 100
-        growth["latest_quarter_yoy"] = (q[qe[-1]] / q[qe[-5]] - 1) * 100 if q[qe[-5]] else None
+        prior = sum(q[e] for e in qe[-8:-4])
+        growth["revenue_ttm_yoy"] = (sum(q[e] for e in qe[-4:]) / prior - 1) * 100 if prior > 0 else None
+        growth["latest_quarter_yoy"] = (q[qe[-1]] / q[qe[-5]] - 1) * 100 if q[qe[-5]] and q[qe[-5]] > 0 else None
     growth["quarterly_revenue"] = [[e, q[e]] for e in qe]
 
     # capital allocation (last 5 FY)
