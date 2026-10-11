@@ -49,4 +49,5 @@ jobs:
       - if: steps.v.outputs.ok != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue comment ${{ github.event.issue.number }} --body "Could not add that ticker: it is not a valid US SEC-registered ticker symbol."
+        run: |
+          gh issue comment ${{ github.event.issue.number }} --body "Could not add that ticker - it is not a valid US SEC-registered ticker symbol."
