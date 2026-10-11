@@ -9,7 +9,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - run: |
-          p() { echo "== $1"; curl -s -m 25 -A "$2" -o /tmp/o -w "%{http_code} %{size_download}B %{time_total}s\n" "$3"; head -c 120 /tmp/o; echo; }
+          p() { echo "== $1"; curl -s -m 25 $H -A "$2" -o /tmp/o -w "%{http_code} %{size_download}B %{time_total}s\n" "$3"; head -c 120 /tmp/o 2>/dev/null; echo; rm -f /tmp/o; }
+          set +e
+          for H in "" "--http1.1"; do echo "#### curl opts: [$H]"
           p fred-moz "Mozilla/5.0" "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10"
           p fred-ua "MarketVision AI research Jhon.cuthbertson@hotworx.net" "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10"
           p fred-curl "curl/8" "https://fred.stlouisfed.org/graph/fredgraph.csv?id=UNRATE"
@@ -19,3 +21,4 @@ jobs:
           p treasury "Mozilla/5.0" "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/avg_interest_rates?page%5Bsize%5D=1"
           p ust-yield "Mozilla/5.0" "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2026/all?type=daily_treasury_yield_curve&field_tdr_date_value=2026&page&_format=csv"
           p dbnomics "Mozilla/5.0" "https://api.db.nomics.world/v22/series/FED/H15/RIFLGFCY10_N.B?observations=1&format=json"
+          done
