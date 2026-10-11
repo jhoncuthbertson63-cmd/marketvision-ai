@@ -1,7 +1,7 @@
 """FRED public CSV (no key): https://fred.stlouisfed.org/graph/fredgraph.csv?id=SERIES"""
 import csv, io
 from ..core import cache
-from ..core.config import TTL_FRED
+from ..core.config import TTL_FRED, SEC_USER_AGENT
 import asyncio
 from ..core.http import get_retry, SourceUnavailable
 _sem = asyncio.Semaphore(2)
@@ -12,7 +12,8 @@ async def series(sid: str) -> dict:
 
     async def fetch():
         async with _sem:
-            r = await get_retry(url, tries=4, timeout=30)
+            # FRED rejects a bare browser UA from cloud runners; a descriptive UA works everywhere.
+            r = await get_retry(url, tries=4, timeout=30, headers={"User-Agent": SEC_USER_AGENT})
         out = []
         rd = csv.reader(io.StringIO(r.text))
         next(rd, None)
