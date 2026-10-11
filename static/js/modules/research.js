@@ -207,7 +207,7 @@ function analyst(b1, b2, r) {
 
 function scenarios(box, r) {
   const S = r.scenarios;
-  if (!S?.available) { box.innerHTML = U.panel({ title: 'Bull / base / bear scenarios', body: U.unavailable('scenarios', S?.reason) }); return; }
+  if (!S?.available) { box.innerHTML = U.panel({ title: 'Bull / base / bear scenarios', body: S?.pre_revenue ? `<div class="unavail" style="border-color:var(--bd);color:var(--tx2)"><b>Scenario model not applicable — pre-revenue company</b>${U.esc(S.reason)}</div>` : U.unavailable('scenarios', S?.reason) }); return; }
   const base = S.scenarios.base.assumptions, isPE = S.method === 'pe';
   box.innerHTML = U.panel({ title: 'Bull / base / bear scenarios & simulator — 5-year model', right: U.lbl('model', 'Model forecast · not a prediction'), body: `
     <div class="sc-cards" id="cards"></div>

@@ -45,8 +45,14 @@ def build(fund: dict, quote: dict, analyst: dict) -> dict:
     shares0 = (quote["marketCap"] / price0 if quote.get("marketCap") and price0 else None) or quote.get("sharesOutstanding") or (fund.get("shares_outstanding") or {}).get("val")
     if not shares0 and fund["rows"]:
         shares0 = fund["rows"][-1].get("diluted_shares")
-    if not (rev0 and price0 and shares0) or rev0 <= 0:
-        return {"available": False, "reason": "Needs TTM revenue (SEC), price and share count (Yahoo) — one is missing."}
+    if rev0 is not None and rev0 <= 0 and price0 and shares0:
+        return {"available": False, "pre_revenue": True,
+                "reason": f"Not applicable: SEC filings show no revenue over the trailing 12 months (TTM to {ttm.get('end')}). "
+                          "A revenue-and-margin scenario model would be meaningless for a pre-revenue company; its value depends on "
+                          "events such as trial results, approvals or financing, which this model does not forecast."}
+    if not (rev0 and price0 and shares0):
+        missing = [n for n, v in (("TTM revenue (SEC)", rev0), ("price (Yahoo)", price0), ("share count", shares0)) if not v]
+        return {"available": False, "reason": "Needs TTM revenue (SEC), price and share count (Yahoo) — missing: " + ", ".join(missing) + "."}
     notes = []
     # starting growth
     g_an = analyst.get("revenue_growth_next_fy")
