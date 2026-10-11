@@ -42,6 +42,8 @@ async def build_research(tickers, out: Path, max_age_h: float, conc: int):
     REPORT_STORE.mkdir(parents=True, exist_ok=True)
     sem = asyncio.Semaphore(conc)
     ok, fail, reused = [], {}, 0
+    budget = float(os.getenv("RESEARCH_BUDGET_MIN", 40)) * 60
+    t_start = time.time(); done = [0]
 
     async def one(t):
         nonlocal reused
@@ -51,6 +53,10 @@ async def build_research(tickers, out: Path, max_age_h: float, conc: int):
             ok.append(t)
             return
         async with sem:
+            if time.time() - t_start > budget:
+                fail[t] = "skipped: build time budget reached"
+                if store.exists(): ok.append(t)
+                return
             try:
                 rep = await asyncio.wait_for(research.research(t, narrative_mode="rule"), 180)
                 dump(store, slim(rep))
@@ -60,6 +66,9 @@ async def build_research(tickers, out: Path, max_age_h: float, conc: int):
                 fail[t] = str(msg)[:160]
                 if store.exists():  # keep last good report (it carries its own timestamp)
                     ok.append(t)
+            done[0] += 1
+            if done[0] % 25 == 0:
+                print(f"  research progress {done[0]}/{len(tickers)-reused} built, {len(fail)} failed, {time.time()-t_start:.0f}s", flush=True)
     t0 = time.time()
     await asyncio.gather(*(one(t) for t in tickers))
     dest = out / "data" / "research"
@@ -95,7 +104,7 @@ async def main():
 
     async def save(name, coro):
         try:
-            dump(out / "data" / f"{name}.json", await coro)
+            t0 = time.time(); dump(out / "data" / f"{name}.json", await asyncio.wait_for(coro, 300)); print(f"  {name}: {time.time()-t0:.0f}s", flush=True)
         except Exception as e:
             errors[name] = f"{type(e).__name__}: {str(e)[:150]}"
             dump(out / "data" / f"{name}.json", {"error": f"Data unavailable at snapshot time ({type(e).__name__})."})

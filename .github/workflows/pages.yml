@@ -37,10 +37,16 @@ jobs:
             data/static_reports
           key: mv-data-${{ github.run_id }}
           restore-keys: mv-data-
+      - name: Probe data sources
+        env:
+          SEC_USER_AGENT: "MarketVision AI research Jhon.cuthbertson@hotworx.net"
+        run: python scripts/probe_sources.py
       - name: Build static snapshot
         env:
           SEC_USER_AGENT: "MarketVision AI research Jhon.cuthbertson@hotworx.net"
           RESEARCH_MAX_AGE_H: ${{ (github.event.schedule == '30 2 * * *' || inputs.full) && '1' || '20' }}
+          RESEARCH_BUDGET_MIN: "40"
+          PYTHONUNBUFFERED: "1"
           MV_SCHEDULE_TEXT: "Auto-refresh every 30 min during US market hours (Mon-Fri) + daily full rebuild"
         run: python scripts/build_static.py --out site --conc 4
       - uses: actions/upload-pages-artifact@v3
